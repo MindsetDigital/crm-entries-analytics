@@ -1,0 +1,14 @@
+{
+  "name": "mindset-digital/crm-entries-analytics",
+  "description": "Dashboard e informes PDF para Contact Form Entries de CRM Perks.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=7.4",
+    "mpdf/mpdf": "^8.3"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  }
+}
