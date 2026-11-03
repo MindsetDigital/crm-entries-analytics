@@ -3,7 +3,7 @@ Contributors: mindsetdigital
 Tags: crm, contact form entries, analytics, leads, dashboard
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.1
 Requires Plugins: contact-form-entries
 License: GPLv2 or later
 
@@ -24,8 +24,12 @@ Añade una pantalla "Analítica" dentro del menú CRM Entries con:
 * Buscador por nombre, email o cualquier valor guardado.
 * Vista de detalle y acceso a la entrada original.
 * Informe PDF corporativo sin datos personales.
+* Migración de registros mediante paquetes JSON/ZIP versionados.
+* Importación con previsualización, asociación de formularios y procesamiento por lotes.
+* Modos de sustitución, actualización o creación exclusiva de nuevos registros.
+* Copia automática antes de sustituir datos y exportación CSV para consulta.
 
-El plugin no modifica las tablas de Contact Form Entries. Todas las consultas son de solo lectura.
+La pantalla de analítica es de solo lectura. La sección Migración de datos solo modifica registros después de una confirmación explícita y está restringida a administradores.
 
 == Instalación ==
 
@@ -39,9 +43,23 @@ El plugin no modifica las tablas de Contact Form Entries. Todas las consultas so
 * Contact Form Entries guarda las fechas en UTC; el dashboard las convierte a la zona horaria configurada en WordPress.
 * El nombre, email y teléfono se detectan automáticamente a partir de los nombres y valores de los campos.
 * Solo pueden acceder usuarios con permiso para ver CRM Entries o administradores.
-* Se recomienda mantener Contact Form Entries actualizado a la versión 1.5.5 o posterior.
+* Se recomienda mantener Contact Form Entries actualizado. La migración comprueba la estructura real de sus tablas en lugar de exigir una versión concreta.
 
 == Changelog ==
+
+= 1.5.1 =
+
+* Elimina el requisito rígido de CRM Entries 1.5.5 durante la importación.
+* Basa la compatibilidad en las tablas y columnas disponibles en cada instalación.
+
+= 1.5.0 =
+
+* Añade la sección Migración de datos con pestañas de importación y exportación.
+* Incorpora paquetes `.cea.zip` con JSON/NDJSON, comprobación SHA-256 y adjuntos opcionales.
+* Añade previsualización, asociación de formularios y detección estable de coincidencias.
+* Permite actualizar y crear, crear solamente nuevos o sustituir datos con copia automática.
+* Procesa las importaciones por lotes y ofrece un resumen final auditable.
+* Añade una capacidad administrativa independiente y exportación CSV protegida contra fórmulas.
 
 = 1.4.0 =
 

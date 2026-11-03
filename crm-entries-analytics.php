@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CRM Entries Analytics
  * Description: Dashboard moderno de analítica y consulta para Contact Form Entries de CRM Perks.
- * Version: 1.4.0
+ * Version: 1.5.1
  * Author: Mindset Digital
  * Text Domain: crm-entries-analytics
  * Requires at least: 5.8
@@ -14,16 +14,18 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'CEA_VERSION', '1.4.0' );
+define( 'CEA_VERSION', '1.5.1' );
 define( 'CEA_FILE', __FILE__ );
 define( 'CEA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CEA_URL', plugin_dir_url( __FILE__ ) );
 define( 'CEA_CAPABILITY', 'cea_view_analytics' );
+define( 'CEA_MIGRATION_CAPABILITY', 'cea_migrate_entries' );
 
 require_once CEA_PATH . 'includes/class-cea-db.php';
 require_once CEA_PATH . 'includes/class-cea-rest.php';
 require_once CEA_PATH . 'includes/class-cea-admin.php';
 require_once CEA_PATH . 'includes/class-cea-report.php';
+require_once CEA_PATH . 'includes/class-cea-migration.php';
 
 final class CEA_Plugin {
     private static $instance = null;
@@ -49,10 +51,13 @@ final class CEA_Plugin {
             new CEA_Admin( $db );
             new CEA_Report( $db );
         }
+
+        new CEA_Migration( $db );
     }
 
     public static function activate() {
         self::sync_capabilities();
+        CEA_Migration::install();
     }
 
     public static function sync_capabilities() {
@@ -70,6 +75,10 @@ final class CEA_Plugin {
 
             if ( $can_read_entries && ! $role->has_cap( CEA_CAPABILITY ) ) {
                 $role->add_cap( CEA_CAPABILITY );
+            }
+
+            if ( $role->has_cap( 'manage_options' ) && ! $role->has_cap( CEA_MIGRATION_CAPABILITY ) ) {
+                $role->add_cap( CEA_MIGRATION_CAPABILITY );
             }
         }
     }
