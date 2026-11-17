@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CRM Entries Analytics
  * Description: Dashboard moderno de analítica y consulta para Contact Form Entries de CRM Perks.
- * Version: 1.5.1
+ * Version: 1.6.0
  * Author: Mindset Digital
  * Text Domain: crm-entries-analytics
  * Requires at least: 5.8
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'CEA_VERSION', '1.5.1' );
+define( 'CEA_VERSION', '1.6.0' );
 define( 'CEA_FILE', __FILE__ );
 define( 'CEA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CEA_URL', plugin_dir_url( __FILE__ ) );
@@ -25,6 +25,7 @@ require_once CEA_PATH . 'includes/class-cea-db.php';
 require_once CEA_PATH . 'includes/class-cea-rest.php';
 require_once CEA_PATH . 'includes/class-cea-admin.php';
 require_once CEA_PATH . 'includes/class-cea-report.php';
+require_once CEA_PATH . 'includes/class-cea-export.php';
 require_once CEA_PATH . 'includes/class-cea-migration.php';
 
 final class CEA_Plugin {
@@ -50,6 +51,7 @@ final class CEA_Plugin {
         if ( is_admin() ) {
             new CEA_Admin( $db );
             new CEA_Report( $db );
+            new CEA_Export( $db );
         }
 
         new CEA_Migration( $db );

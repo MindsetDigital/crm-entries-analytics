@@ -3,7 +3,7 @@ Contributors: mindsetdigital
 Tags: crm, contact form entries, analytics, leads, dashboard
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.6.0
 Requires Plugins: contact-form-entries
 License: GPLv2 or later
 
@@ -46,6 +46,13 @@ La pantalla de analítica es de solo lectura. La sección Migración de datos so
 * Se recomienda mantener Contact Form Entries actualizado. La migración comprueba la estructura real de sus tablas en lugar de exigir una versión concreta.
 
 == Changelog ==
+
+= 1.6.0 =
+
+* Nueva pantalla "Exportar leads" con exportación CSV por formulario, todos en una misma hoja o un CSV por formulario en ZIP.
+* Separador configurable (punto y coma por defecto, coma, tabulador, barra vertical o personalizado) y preferencias recordadas por usuario.
+* Cabeceras con las etiquetas de los campos, columnas unificadas de contacto y compatibilidad con Excel (UTF-8 con BOM).
+* Botón "Exportar CSV" en la analítica que traslada los filtros activos.
 
 = 1.5.1 =
 

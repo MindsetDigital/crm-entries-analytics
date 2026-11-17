@@ -236,6 +236,139 @@ class CEA_DB {
         );
     }
 
+    /**
+     * Returns the dynamic fields present in the leads matching the filters, grouped by form.
+     *
+     * Field order follows the form definition when CRM Entries exposes it, then the
+     * order in which fields were first stored.
+     *
+     * @return array form_id => array( 'label' => string, 'fields' => array( key => label ) )
+     */
+    public function get_export_structure( array $filters ) {
+        list( $where, $params ) = $this->build_where( $filters, true );
+
+        $sql = "SELECT l.form_id, d.name, MIN(d.id) AS first_id
+                FROM {$this->leads_table} l
+                LEFT JOIN {$this->detail_table} d ON d.lead_id = l.id
+                {$where}
+                GROUP BY l.form_id, d.name
+                ORDER BY l.form_id ASC, first_id ASC";
+
+        $rows  = $this->wpdb->get_results( $this->prepare_query( $sql, $params ), ARRAY_A );
+        $forms = $this->get_forms();
+        $found = array();
+
+        foreach ( $rows as $row ) {
+            $form_id = (string) $row['form_id'];
+            if ( ! isset( $found[ $form_id ] ) ) {
+                $found[ $form_id ] = array();
+            }
+            if ( null !== $row['name'] && '' !== (string) $row['name'] ) {
+                $found[ $form_id ][] = (string) $row['name'];
+            }
+        }
+
+        $structure = array();
+        foreach ( $forms as $form_id => $label ) {
+            if ( isset( $found[ $form_id ] ) ) {
+                $structure[ $form_id ] = array( 'label' => $label, 'fields' => array() );
+            }
+        }
+        foreach ( array_keys( $found ) as $form_id ) {
+            if ( ! isset( $structure[ $form_id ] ) ) {
+                $structure[ $form_id ] = array( 'label' => $this->fallback_form_label( $form_id ), 'fields' => array() );
+            }
+        }
+
+        foreach ( $structure as $form_id => $form ) {
+            $labels   = $this->get_field_labels( $form_id );
+            $position = array_flip( array_map( 'strval', array_keys( $labels ) ) );
+            $keys     = $found[ $form_id ];
+            $order    = array_flip( $keys );
+
+            usort(
+                $keys,
+                static function ( $first, $second ) use ( $position, $order ) {
+                    $first_known  = isset( $position[ $first ] );
+                    $second_known = isset( $position[ $second ] );
+                    if ( $first_known && $second_known ) {
+                        return $position[ $first ] <=> $position[ $second ];
+                    }
+                    if ( $first_known !== $second_known ) {
+                        return $first_known ? -1 : 1;
+                    }
+                    return $order[ $first ] <=> $order[ $second ];
+                }
+            );
+
+            foreach ( $keys as $key ) {
+                $structure[ $form_id ]['fields'][ $key ] = isset( $labels[ $key ] ) && '' !== $labels[ $key ] ? $labels[ $key ] : $this->humanize_key( $key );
+            }
+        }
+
+        return $structure;
+    }
+
+    /**
+     * Returns a batch of leads ready to be written to an export, ordered by date.
+     *
+     * @param array      $filters Normalized filters.
+     * @param array|null $cursor  array( 'created' => string, 'id' => int ) of the last exported lead.
+     * @param int        $limit   Batch size.
+     * @return array array( 'items' => array, 'cursor' => array|null )
+     */
+    public function get_export_batch( array $filters, $cursor, $limit ) {
+        list( $where, $params ) = $this->build_where( $filters, true );
+
+        if ( is_array( $cursor ) ) {
+            $where   .= ' AND ( l.created > %s OR ( l.created = %s AND l.id > %d ) )';
+            $params[] = $cursor['created'];
+            $params[] = $cursor['created'];
+            $params[] = (int) $cursor['id'];
+        }
+
+        $params[] = max( 1, (int) $limit );
+        $sql      = "SELECT l.id, l.form_id, l.is_read, l.url, l.ip, l.browser, l.os, l.created
+                     FROM {$this->leads_table} l
+                     {$where}
+                     ORDER BY l.created ASC, l.id ASC
+                     LIMIT %d";
+
+        $leads   = $this->wpdb->get_results( $this->prepare_query( $sql, $params ), ARRAY_A );
+        $details = $this->get_details_for_leads( wp_list_pluck( $leads, 'id' ) );
+        $items   = array();
+
+        foreach ( $leads as $lead ) {
+            $lead_id = (int) $lead['id'];
+            $raw     = isset( $details[ $lead_id ] ) ? $details[ $lead_id ] : array();
+            $fields  = array();
+            foreach ( $raw as $key => $value ) {
+                $fields[ $key ] = $this->normalize_value( $value );
+            }
+            $local = $this->utc_mysql_to_local( $lead['created'] );
+
+            $items[] = array(
+                'id'      => $lead_id,
+                'formId'  => (string) $lead['form_id'],
+                'isRead'  => (bool) $lead['is_read'],
+                'created' => $local ? $local->format( 'Y-m-d H:i:s' ) : '',
+                'url'     => esc_url_raw( (string) $lead['url'] ),
+                'ip'      => sanitize_text_field( (string) $lead['ip'] ),
+                'browser' => sanitize_text_field( (string) $lead['browser'] ),
+                'os'      => sanitize_text_field( (string) $lead['os'] ),
+                'contact' => $this->extract_contact_fields( $raw ),
+                'fields'  => $fields,
+            );
+        }
+
+        $last = end( $leads );
+
+        return array(
+            'items'  => $items,
+            'cursor' => $last ? array( 'created' => (string) $last['created'], 'id' => (int) $last['id'] ) : null,
+        );
+    }
+
     private function get_metric_rows( array $filters ) {
         list( $where, $params ) = $this->build_where( $filters, true );
         $sql = "SELECT l.id, l.form_id, l.is_read, l.created FROM {$this->leads_table} l {$where} ORDER BY l.created ASC";

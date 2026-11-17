@@ -18,3 +18,4 @@ $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}cea_migration_map" ); // phpc
 delete_option( 'cea_migration_db_version' );
 delete_option( 'cea_site_uuid' );
 delete_option( 'cea_migration_lock' );
+delete_metadata( 'user', 0, 'cea_export_prefs', '', true );

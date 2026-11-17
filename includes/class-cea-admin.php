@@ -43,6 +43,7 @@ class CEA_Admin {
                 'crmUrl'      => admin_url( 'admin.php?page=vxcf_leads' ),
                 'reportUrl'   => esc_url_raw( admin_url( 'admin-post.php' ) ),
                 'reportNonce' => wp_create_nonce( 'cea_export_pdf' ),
+                'exportUrl'   => esc_url_raw( admin_url( 'admin.php?page=' . CEA_Export::PAGE ) ),
             )
         );
     }
@@ -61,6 +62,7 @@ class CEA_Admin {
                 </div>
                 <div class="cea-header-actions">
                     <button type="button" class="button button-primary" id="cea-export-pdf"><?php esc_html_e( 'Descargar informe PDF', 'crm-entries-analytics' ); ?></button>
+                    <button type="button" class="button" id="cea-export-csv"><?php esc_html_e( 'Exportar CSV', 'crm-entries-analytics' ); ?></button>
                     <a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=vxcf_leads' ) ); ?>"><?php esc_html_e( 'Abrir CRM Entries', 'crm-entries-analytics' ); ?></a>
                 </div>
             </div>

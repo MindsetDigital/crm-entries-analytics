@@ -18,7 +18,7 @@
   const el = (id) => document.getElementById(id);
   const els = {
     datePreset: el('cea-date-preset'), start: el('cea-start'), end: el('cea-end'), form: el('cea-form'), status: el('cea-status'),
-    apply: el('cea-apply'), reset: el('cea-reset'), exportPdf: el('cea-export-pdf'), loading: el('cea-loading'), error: el('cea-error'),
+    apply: el('cea-apply'), reset: el('cea-reset'), exportPdf: el('cea-export-pdf'), exportCsv: el('cea-export-csv'), loading: el('cea-loading'), error: el('cea-error'),
     total: el('cea-total'), read: el('cea-read'), unread: el('cea-unread'), readPercent: el('cea-read-percent'), unreadPercent: el('cea-unread-percent'),
     line: el('cea-line-chart'), lineCaption: el('cea-timeline-caption'), legend: el('cea-series-legend'), trend: el('cea-trend-toggle'),
     formCards: el('cea-form-cards'), comparisonCaption: el('cea-comparison-caption'), heatmap: el('cea-heatmap'), timezone: el('cea-timezone'),
@@ -132,6 +132,15 @@
       els.exportPdf.disabled = false;
       els.exportPdf.textContent = originalLabel;
     }, 500);
+  };
+
+  const openCsvExport = () => {
+    if (!config.exportUrl) return;
+    const url = new URL(config.exportUrl, window.location.href);
+    Object.entries(currentFilters(true)).forEach(([key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) url.searchParams.set(key, value);
+    });
+    window.location.href = url.toString();
   };
 
   const init = async () => {
@@ -540,6 +549,7 @@
 
   els.apply.addEventListener('click', () => { state.page = 1; loadAll(); });
   els.exportPdf.addEventListener('click', downloadReport);
+  if (els.exportCsv) els.exportCsv.addEventListener('click', openCsvExport);
   els.reset.addEventListener('click', () => {
     if (!state.defaults) return;
     els.start.value = state.defaults.start;
